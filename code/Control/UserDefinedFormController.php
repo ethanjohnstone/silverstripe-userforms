@@ -115,6 +115,14 @@ class UserDefinedFormController extends PageController
     public function index(HTTPRequest $request = null)
     {
         $form = $this->Form();
+
+        if ($form && $form->SubmissionLimit && $form->Submissions()->count() >= $form->SubmissionLimit) {
+            return [
+                'Content' => DBField::create_field('HTMLText', $form->SubmissionMessage),
+                'Form' => ''
+            ];
+        }
+
         if ($this->Content && $form && !$this->config()->disable_form_content_shortcode) {
             $hasLocation = stristr($this->Content, '$UserDefinedForm');
             if ($hasLocation) {

@@ -25,6 +25,7 @@ use SilverStripe\Forms\GridField\GridFieldToolbarHeader;
 use SilverStripe\Forms\HTMLEditor\HTMLEditorField;
 use SilverStripe\Forms\LabelField;
 use SilverStripe\Forms\LiteralField;
+use SilverStripe\Forms\NumericField;
 use SilverStripe\Forms\TextField;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\DB;
@@ -100,7 +101,9 @@ trait UserForm
         'EnableLiveValidation' => 'Boolean',
         'DisplayErrorMessagesAtTop' => 'Boolean',
         'DisableAuthenicatedFinishAction' => 'Boolean',
-        'DisableCsrfSecurityToken' => 'Boolean'
+        'DisableCsrfSecurityToken' => 'Boolean',
+        "SubmissionLimit" => "Int",
+        "SubmissionLimitMessage" => "HTMLText"
     ];
 
     /**
@@ -182,16 +185,16 @@ trait UserForm
             $fields->removeByName('EmailRecipients');
 
             // define tabs
-            $fields->findOrMakeTab('Root.FormOptions', _t(__CLASS__.'.CONFIGURATION', 'Configuration'));
-            $fields->findOrMakeTab('Root.Recipients', _t(__CLASS__.'.RECIPIENTS', 'Recipients'));
-            $fields->findOrMakeTab('Root.Submissions', _t(__CLASS__.'.SUBMISSIONS', 'Submissions'));
+            $fields->findOrMakeTab('Root.FormOptions', _t(__CLASS__ . '.CONFIGURATION', 'Configuration'));
+            $fields->findOrMakeTab('Root.Recipients', _t(__CLASS__ . '.RECIPIENTS', 'Recipients'));
+            $fields->findOrMakeTab('Root.Submissions', _t(__CLASS__ . '.SUBMISSIONS', 'Submissions'));
 
 
             // text to show on complete
             $onCompleteFieldSet = CompositeField::create(
                 $label = LabelField::create(
                     'OnCompleteMessageLabel',
-                    _t(__CLASS__.'.ONCOMPLETELABEL', 'Show on completion')
+                    _t(__CLASS__ . '.ONCOMPLETELABEL', 'Show on completion')
                 ),
                 $editor = HTMLEditorField::create(
                     'OnCompleteMessage',
@@ -209,7 +212,7 @@ trait UserForm
             $emailRecipientsConfig = GridFieldConfig_RecordEditor::create(10);
             $emailRecipientsConfig->getComponentByType(GridFieldAddNewButton::class)
                 ->setButtonName(
-                    _t(__CLASS__.'.ADDEMAILRECIPIENT', 'Add Email Recipient')
+                    _t(__CLASS__ . '.ADDEMAILRECIPIENT', 'Add Email Recipient')
                 );
 
             // who do we email on submission
@@ -231,7 +234,7 @@ trait UserForm
 
             // view the submissions
             // make sure a numeric not a empty string is checked against this int column for SQL server
-            $parentID = (!empty($this->ID)) ? (int) $this->ID : 0;
+            $parentID = (!empty($this->ID)) ? (int)$this->ID : 0;
 
             // get a list of all field names and values used for print and export CSV views of the GridField below.
             $columnSQL = <<<SQL
@@ -314,7 +317,7 @@ SQL;
                 'Root.FormOptions',
                 CheckboxField::create(
                     'DisableSaveSubmissions',
-                    _t(__CLASS__.'.SAVESUBMISSIONS', 'Disable Saving Submissions to Server')
+                    _t(__CLASS__ . '.SAVESUBMISSIONS', 'Disable Saving Submissions to Server')
                 )
             );
         });
@@ -325,7 +328,7 @@ SQL;
             $fields->addFieldToTab('Root.Main', LiteralField::create(
                 'EmailRecipientsWarning',
                 '<p class="message warning">' . _t(
-                    __CLASS__.'.NORECIPIENTS',
+                    __CLASS__ . '.NORECIPIENTS',
                     'Warning: You have not configured any recipients. Form submissions may be missed.'
                 )
                 . '</p>'
@@ -366,17 +369,19 @@ SQL;
      */
     public function getFormOptions()
     {
-        $submit = ($this->SubmitButtonText) ? $this->SubmitButtonText : _t(__CLASS__.'.SUBMITBUTTON', 'Submit');
-        $clear = ($this->ClearButtonText) ? $this->ClearButtonText : _t(__CLASS__.'.CLEARBUTTON', 'Clear');
+        $submit = ($this->SubmitButtonText) ? $this->SubmitButtonText : _t(__CLASS__ . '.SUBMITBUTTON', 'Submit');
+        $clear = ($this->ClearButtonText) ? $this->ClearButtonText : _t(__CLASS__ . '.CLEARBUTTON', 'Clear');
 
         $options = FieldList::create(
-            TextField::create('SubmitButtonText', _t(__CLASS__.'.TEXTONSUBMIT', 'Text on submit button:'), $submit),
-            TextField::create('ClearButtonText', _t(__CLASS__.'.TEXTONCLEAR', 'Text on clear button:'), $clear),
-            CheckboxField::create('ShowClearButton', _t(__CLASS__.'.SHOWCLEARFORM', 'Show Clear Form Button'), $this->ShowClearButton),
-            CheckboxField::create('EnableLiveValidation', _t(__CLASS__.'.ENABLELIVEVALIDATION', 'Enable live validation')),
-            CheckboxField::create('DisplayErrorMessagesAtTop', _t(__CLASS__.'.DISPLAYERRORMESSAGESATTOP', 'Display error messages above the form?')),
-            CheckboxField::create('DisableCsrfSecurityToken', _t(__CLASS__.'.DISABLECSRFSECURITYTOKEN', 'Disable CSRF Token')),
-            CheckboxField::create('DisableAuthenicatedFinishAction', _t(__CLASS__.'.DISABLEAUTHENICATEDFINISHACTION', 'Disable Authentication on finish action'))
+            TextField::create('SubmitButtonText', _t(__CLASS__ . '.TEXTONSUBMIT', 'Text on submit button:'), $submit),
+            TextField::create('ClearButtonText', _t(__CLASS__ . '.TEXTONCLEAR', 'Text on clear button:'), $clear),
+            CheckboxField::create('ShowClearButton', _t(__CLASS__ . '.SHOWCLEARFORM', 'Show Clear Form Button'), $this->ShowClearButton),
+            CheckboxField::create('EnableLiveValidation', _t(__CLASS__ . '.ENABLELIVEVALIDATION', 'Enable live validation')),
+            CheckboxField::create('DisplayErrorMessagesAtTop', _t(__CLASS__ . '.DISPLAYERRORMESSAGESATTOP', 'Display error messages above the form?')),
+            CheckboxField::create('DisableCsrfSecurityToken', _t(__CLASS__ . '.DISABLECSRFSECURITYTOKEN', 'Disable CSRF Token')),
+            CheckboxField::create('DisableAuthenicatedFinishAction', _t(__CLASS__ . '.DISABLEAUTHENICATEDFINISHACTION', 'Disable Authentication on finish action')),
+            NumericField::create("SubmissionLimit"),
+            HTMLEditorField::create("SubmissionLimitMessage")
         );
 
         $this->extend('updateFormOptions', $options);
