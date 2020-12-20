@@ -116,9 +116,9 @@ class UserDefinedFormController extends PageController
     {
         $form = $this->Form();
 
-        if ($form && $form->SubmissionLimit && $form->Submissions()->count() >= $form->SubmissionLimit) {
+        if ($form && $this->SubmissionLimit && $this->Submissions()->count() >= $this->SubmissionLimit) {
             return [
-                'Content' => DBField::create_field('HTMLText', $form->SubmissionMessage),
+                'Content' => DBField::create_field('HTMLText', $this->SubmissionLimitMessage),
                 'Form' => ''
             ];
         }
